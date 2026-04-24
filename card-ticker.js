@@ -87,6 +87,15 @@ document.querySelectorAll(".ticker-slider").forEach((e) => {
     render();
   }
 
+  function scheduleStartupRecalc() {
+    const delays = [0, 120, 320, 700, 1200];
+    delays.forEach((delay) => {
+      setTimeout(() => {
+        recalc();
+      }, delay);
+    });
+  }
+
   window.addEventListener("resize", recalc);
   if (window.ResizeObserver) {
     let roTicking = false;
@@ -146,14 +155,18 @@ document.querySelectorAll(".ticker-slider").forEach((e) => {
   window.addEventListener(
     "load",
     () => {
-      recalc();
-      setTimeout(recalc, 180);
+      scheduleStartupRecalc();
     },
     { once: true }
   );
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(recalc).catch(() => {});
+    document.fonts.ready.then(scheduleStartupRecalc).catch(() => {});
   }
+  c.querySelectorAll("img").forEach((img) => {
+    if (!img.complete) {
+      img.addEventListener("load", recalc, { once: true });
+    }
+  });
 
   requestAnimationFrame(function loop(time) {
     let delta = (time - (s === null ? time : s)) / 1000;
