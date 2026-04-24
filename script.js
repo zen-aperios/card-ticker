@@ -79,12 +79,15 @@ document.querySelectorAll(".ticker-slider").forEach((e) => {
     c.style.transform = `translateX(${h}px)`;
   }
 
-  window.addEventListener("resize", () => {
+  function recalc() {
     h = 0;
     s = null;
     t();
+    seedRightBuffer();
     render();
-  });
+  }
+
+  window.addEventListener("resize", recalc);
 
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) s = null;
@@ -125,9 +128,20 @@ document.querySelectorAll(".ticker-slider").forEach((e) => {
   e.addEventListener("pointerup", endDrag);
   e.addEventListener("pointercancel", endDrag);
 
-  t();
-  seedRightBuffer();
-  render();
+  recalc();
+
+  // Late-loading layout changes (fonts/images) can alter widths on first load.
+  window.addEventListener("load", recalc, { once: true });
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(recalc).catch(() => {});
+  }
+  c.querySelectorAll("img").forEach((img) => {
+    if (!img.complete) img.addEventListener("load", recalc, { once: true });
+  });
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => recalc());
+    ro.observe(e);
+  }
 
   requestAnimationFrame(function loop(time) {
     let delta = (time - (s === null ? time : s)) / 1000;
