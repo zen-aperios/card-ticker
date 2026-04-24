@@ -88,6 +88,18 @@ document.querySelectorAll(".ticker-slider").forEach((e) => {
   }
 
   window.addEventListener("resize", recalc);
+  if (window.ResizeObserver) {
+    let roTicking = false;
+    const ro = new ResizeObserver(() => {
+      if (roTicking) return;
+      roTicking = true;
+      requestAnimationFrame(() => {
+        roTicking = false;
+        recalc();
+      });
+    });
+    ro.observe(e);
+  }
 
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) s = null;
