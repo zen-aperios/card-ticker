@@ -10,21 +10,33 @@ document.querySelectorAll(".ticker-slider").forEach((e) => {
   let dragging = false;
   let pointerId = null;
   let lastPointerX = 0;
+  let gap = 0;
 
   function t() {
     while (c.scrollWidth < 2.5 * e.clientWidth) {
       f.forEach((item) => c.appendChild(item.cloneNode(true)));
       f = Array.from(c.children);
     }
+    gap = Number.parseFloat(getComputedStyle(c).gap) || 0;
+    f.forEach((item) => {
+      item.setAttribute("draggable", "false");
+      item.style.userSelect = "none";
+      item.style.webkitUserSelect = "none";
+    });
+  }
+
+  function itemSpan(item) {
+    const cs = getComputedStyle(item);
+    const marginLeft = Number.parseFloat(cs.marginLeft) || 0;
+    const marginRight = Number.parseFloat(cs.marginRight) || 0;
+    return item.offsetWidth + marginLeft + marginRight + gap;
   }
 
   function normalize() {
-    const gap = Number.parseFloat(getComputedStyle(c).gap) || 0;
-
     if (d === -1) {
       while (f.length) {
         const first = f[0];
-        const width = first.offsetWidth + gap;
+        const width = itemSpan(first);
         if (!(h <= -width)) break;
         h += width;
         c.appendChild(first);
@@ -34,7 +46,7 @@ document.querySelectorAll(".ticker-slider").forEach((e) => {
       // Recycle as soon as we reach/past zero to prevent left-side gap.
       while (f.length) {
         const last = f[f.length - 1];
-        const width = last.offsetWidth + gap;
+        const width = itemSpan(last);
         if (!(h >= 0)) break;
         h -= width;
         c.insertBefore(last, f[0]);
@@ -60,9 +72,14 @@ document.querySelectorAll(".ticker-slider").forEach((e) => {
   });
 
   e.style.touchAction = "pan-y";
+  e.style.userSelect = "none";
+  c.style.touchAction = "pan-y";
+  c.style.userSelect = "none";
+  c.style.webkitUserSelect = "none";
 
   e.addEventListener("pointerdown", (ev) => {
     if (ev.button !== 0) return;
+    ev.preventDefault();
     dragging = true;
     pointerId = ev.pointerId;
     lastPointerX = ev.clientX;
