@@ -55,6 +55,25 @@ document.querySelectorAll(".ticker-slider").forEach((e) => {
     }
   }
 
+  function seedRightBuffer() {
+    if (d !== 1 || !f.length) return;
+
+    let covered = 0;
+    const target = e.clientWidth * 1.25;
+    let safety = 0;
+
+    while (covered < target && f.length && safety < f.length * 4) {
+      const last = f[f.length - 1];
+      const width = itemSpan(last);
+      if (!Number.isFinite(width) || width <= 0) break;
+      h -= width;
+      covered += width;
+      c.insertBefore(last, f[0]);
+      f.unshift(f.pop());
+      safety += 1;
+    }
+  }
+
   function render() {
     normalize();
     c.style.transform = `translateX(${h}px)`;
@@ -107,6 +126,7 @@ document.querySelectorAll(".ticker-slider").forEach((e) => {
   e.addEventListener("pointercancel", endDrag);
 
   t();
+  seedRightBuffer();
   render();
 
   requestAnimationFrame(function loop(time) {
