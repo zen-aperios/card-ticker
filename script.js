@@ -130,17 +130,17 @@ document.querySelectorAll(".ticker-slider").forEach((e) => {
 
   recalc();
 
-  // Late-loading layout changes (fonts/images) can alter widths on first load.
-  window.addEventListener("load", recalc, { once: true });
+  // Lightweight one-time first-load corrections.
+  window.addEventListener(
+    "load",
+    () => {
+      recalc();
+      setTimeout(recalc, 180);
+    },
+    { once: true }
+  );
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(recalc).catch(() => {});
-  }
-  c.querySelectorAll("img").forEach((img) => {
-    if (!img.complete) img.addEventListener("load", recalc, { once: true });
-  });
-  if (window.ResizeObserver) {
-    const ro = new ResizeObserver(() => recalc());
-    ro.observe(e);
   }
 
   requestAnimationFrame(function loop(time) {
